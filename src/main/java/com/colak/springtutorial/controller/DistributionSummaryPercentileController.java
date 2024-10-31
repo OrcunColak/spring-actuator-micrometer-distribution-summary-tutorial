@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequiredArgsConstructor
 public class DistributionSummaryPercentileController {
 
-    private final ThreadLocalRandom random = ThreadLocalRandom.current();
+
 
     private DistributionSummary distributionSummary;
 
@@ -34,6 +34,7 @@ public class DistributionSummaryPercentileController {
         // Note: Micrometer’s DistributionSummary uses the long data type to keep track of the bucket boundaries.
         // If your metrics contain values that are less than one, you will need to multiply these values by a scale number
         // to avoid losing precision when your values are converted to the long datatype.
+        ThreadLocalRandom random = ThreadLocalRandom.current();
         long millis = 10 + random.nextLong(50);
         Thread.sleep(millis);
 
