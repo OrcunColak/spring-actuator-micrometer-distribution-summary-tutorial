@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
-@RequestMapping(path = "/basescalar")
+@RequestMapping(path = "/percentile")
 @RequiredArgsConstructor
-public class DistributionSummaryBaseScalarController {
+public class DistributionSummaryPercentileController {
 
     private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
@@ -24,7 +24,7 @@ public class DistributionSummaryBaseScalarController {
         distributionSummary = createDistributionSummary(registry);
     }
 
-    // http://localhost:8080/basescalar/read
+    // http://localhost:8080/percentile/read
     // http://localhost:8080/actuator/prometheus
 
     @GetMapping("/read")
@@ -41,16 +41,22 @@ public class DistributionSummaryBaseScalarController {
         return String.valueOf(millis);
     }
 
-    // By default, if nothing is configured, the DistributionSummary will simply produce base scalar metrics,
-    // returning just the count, total, and maximum values of the metric.
+    // If you specify percentiles (but DO NOT enable SLO/SLA or publishPercentileHistogram), it will produce a Prometheus
+    // summary metric, returning the count, total, maximum, and the specified quantile numbers of the metric
 
-    // myDistributionSummary_count{application="spring-boot-micrometer-tutorial",region="us-east"} 2
-    // myDistributionSummary_sum{application="spring-boot-micrometer-tutorial",region="us-east"} 74.0
-    // myDistributionSummary_max{application="spring-boot-micrometer-tutorial",region="us-east"} 51.0
+    // DistributionSummaryPercentile{application="spring-boot-micrometer-tutorial",region="us-east",quantile="0.25"} 10.0
+    // DistributionSummaryPercentile{application="spring-boot-micrometer-tutorial",region="us-east",quantile="0.5"} 23.5
+    // DistributionSummaryPercentile{application="spring-boot-micrometer-tutorial",region="us-east",quantile="0.75"} 51.5
+    // DistributionSummaryPercentile{application="spring-boot-micrometer-tutorial",region="us-east",quantile="0.95"} 51.5
+    // DistributionSummaryPercentile_count{application="spring-boot-micrometer-tutorial",region="us-east"} 3
+    // DistributionSummaryPercentile_sum{application="spring-boot-micrometer-tutorial",region="us-east"} 84.0
+    // DistributionSummaryPercentile_max{application="spring-boot-micrometer-tutorial",region="us-east"} 51.0
     private DistributionSummary createDistributionSummary(MeterRegistry meterRegistry) {
         // Count how many times this API has been called
-        return DistributionSummary.builder("myDistributionSummary")
-                .description("A custom distribution summary")
+        return DistributionSummary.builder("DistributionSummaryPercentile")
+                .description("A custom distribution summary for percentile")
+                .maximumExpectedValue(100.0)
+                .publishPercentiles(0.25, 0.5, 0.75, 0.95)
                 .tag("region", "us-east")
                 .register(meterRegistry);
     }

@@ -8,15 +8,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
-@RequestMapping(path = "/percentile")
+@RequestMapping(path = "/histogram")
 @RequiredArgsConstructor
 public class DistributionSummaryHistogramController {
 
-    private final Random random = ThreadLocalRandom.current();
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     private DistributionSummary distributionSummary;
 
@@ -25,15 +24,16 @@ public class DistributionSummaryHistogramController {
         distributionSummary = createDistributionSummary(registry);
     }
 
-    // http://localhost:8080/percentile/read
+    // http://localhost:8080/histogram/read
     // http://localhost:8080/actuator/prometheus
 
-    // See these types
-    // DistributionSummaryPercentile_count
-    // DistributionSummaryPercentile_sum
     @GetMapping("/read")
     public String read() throws InterruptedException {
         // Imitating call latency
+
+        // Note: Micrometer’s DistributionSummary uses the long data type to keep track of the bucket boundaries.
+        // If your metrics contain values that are less than one, you will need to multiply these values by a scale number
+        // to avoid losing precision when your values are converted to the long datatype.
         long millis = 10 + random.nextLong(50);
         Thread.sleep(millis);
 
