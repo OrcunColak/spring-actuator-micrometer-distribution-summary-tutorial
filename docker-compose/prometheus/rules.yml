@@ -1,0 +1,12 @@
+# set up a basic alert rule that triggers when an instance is down for at least 1 minute.
+groups:
+  - name: example
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "The instance {{ $labels.instance }} has been down for more than 1 minute."
